@@ -150,23 +150,7 @@ function VistaGoleadores({ partidos, jugadores }) {
             const owner = jugadores.find(j => j.equipo === inc.equipo)?.nombre || 'Desconocido';
             conteoGoles[key] = { jugadorFC: inc.jugador, equipo: inc.equipo, manager: owner, goles: 0 };
           }
-          conteoGoles[key].goles += 1;
-        }
-      });
-    } else if (p.anotadores) {
-      p.anotadores.forEach(a => {
-        if (a.startsWith('⚽')) {
-          const match = a.match(/⚽ (.*) \((.*)\)/);
-          if (match) {
-            const jugFC = match[1];
-            const eq = match[2];
-            const key = `${jugFC}-${eq}`;
-            if (!conteoGoles[key]) {
-              const owner = jugadores.find(j => j.equipo === eq)?.nombre || 'Desconocido';
-              conteoGoles[key] = { jugadorFC: jugFC, equipo: eq, manager: owner, goles: 0 };
-            }
-            conteoGoles[key].goles += 1;
-          }
+          conteoGoles[key].goles += (inc.cantidad ? parseInt(inc.cantidad) : 1);
         }
       });
     }
@@ -218,7 +202,7 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
   
   const agregarIncidencia = () => {
     if (!local && !visitante) return alert('Selecciona los equipos primero');
-    setIncidencias([...incidencias, { equipo: local || visitante, tipo: '⚽ Gol', jugador: '' }]);
+    setIncidencias([...incidencias, { equipo: local || visitante, tipo: '⚽ Gol', jugador: '', cantidad: 1 }]);
   };
 
   const actualizarIncidencia = (index, campo, valor) => {
@@ -237,7 +221,10 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
     if (!local || !visitante || local === visitante) return alert('Selecciona equipos válidos diferentes.');
     if (golesLocal === '' || golesVisitante === '') return alert('Ingresa los goles.');
     
-    const anotadoresMapeados = incidencias.map(inc => `${inc.tipo.split(' ')[0]} ${inc.jugador} (${inc.equipo})`);
+    const anotadoresMapeados = incidencias.map(inc => {
+      const cantStr = (inc.tipo === '⚽ Gol' && inc.cantidad > 1) ? ` x${inc.cantidad}` : '';
+      return `${inc.tipo.split(' ')[0]} ${inc.jugador}${cantStr} (${inc.equipo})`;
+    });
 
     const nuevoPartido = {
       local, visitante, 
@@ -280,7 +267,7 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
         </div>
 
         <div className="border-t border-slate-100 pt-6">
-          <label className="block text-sm font-bold text-slate-700 mb-4">Eventos (Goles, Rojas, Amarillas)</label>
+          <label className="block text-sm font-bold text-slate-700 mb-4">Eventos del Partido</label>
           <div className="space-y-3">
             {incidencias.map((inc, index) => (
               <div key={index} className="flex flex-col md:flex-row gap-2 items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
@@ -288,23 +275,38 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
                   {local && <option value={local}>{local}</option>}
                   {visitante && <option value={visitante}>{visitante}</option>}
                 </select>
+                
                 <select value={inc.tipo} onChange={e => actualizarIncidencia(index, 'tipo', e.target.value)} className="w-full md:w-1/4 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none font-bold">
                   <option value="⚽ Gol">⚽ Gol</option>
-                  <option value="🟨 Amarilla">🟨 Amarilla</option>
-                  <option value="🟥 Roja">🟥 Roja</option>
+                  <option value="🟨 Tarjeta Amarilla">🟨 Tarjeta Amarilla</option>
+                  <option value="🟥 Tarjeta Roja">🟥 Tarjeta Roja</option>
                 </select>
+                
                 <select value={inc.jugador} onChange={e => actualizarIncidencia(index, 'jugador', e.target.value)} className="w-full md:w-2/4 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none">
                   <option value="">Seleccionar Jugador...</option>
                   {(PLANTILLAS_FC27[inc.equipo] || ['Plantilla no registrada']).map((jug, i) => (
                     <option key={i} value={jug}>{jug}</option>
                   ))}
                 </select>
+
+                {inc.tipo === '⚽ Gol' && (
+                  <input 
+                    type="number" 
+                    min="1" 
+                    placeholder="Goles"
+                    value={inc.cantidad || 1} 
+                    onChange={e => actualizarIncidencia(index, 'cantidad', parseInt(e.target.value) || 1)} 
+                    className="w-full md:w-20 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none text-center font-bold text-blue-600"
+                    title="Cantidad de goles"
+                  />
+                )}
+
                 <button type="button" onClick={() => eliminarIncidencia(index)} className="w-full md:w-auto px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold">X</button>
               </div>
             ))}
           </div>
           <button type="button" onClick={agregarIncidencia} className="mt-4 w-full border-2 border-dashed border-blue-300 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors">
-            + Añadir Jugador al Reporte
+            + Añadir Evento al Reporte
           </button>
         </div>
 

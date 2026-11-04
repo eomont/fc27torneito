@@ -248,27 +248,35 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
       <form onSubmit={guardarResultado} className="p-6 md:p-8 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
           <div className="hidden md:flex absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 text-white w-10 h-10 rounded-full items-center justify-center font-black text-sm z-10 shadow-lg border-4 border-white">VS</div>
+          
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative">
             <div className="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">LOCAL</div>
             <select className="w-full mt-2 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium" value={local} onChange={e => setLocal(e.target.value)} required>
               <option value="">Elegir Equipo...</option>
               {jugadores.map(j => <option key={j.id} value={j.equipo}>{j.equipo} ({j.nombre})</option>)}
             </select>
-            <select className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesLocal} onChange={e => setGolesLocal(e.target.value)} required>
-              <option value="" disabled>-</option>
-              {[...Array(21).keys()].map(num => <option key={num} value={num}>{num}</option>)}
-            </select>
+            <div className="mt-4">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center">Cantidad de goles</label>
+              <select className="w-full p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesLocal} onChange={e => setGolesLocal(e.target.value)} required>
+                <option value="" disabled>-</option>
+                {[...Array(21).keys()].map(num => <option key={num} value={num}>{num}</option>)}
+              </select>
+            </div>
           </div>
+
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative">
             <div className="absolute -top-3 left-4 bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">VISITANTE</div>
             <select className="w-full mt-2 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium" value={visitante} onChange={e => setVisitante(e.target.value)} required>
               <option value="">Elegir Equipo...</option>
               {jugadores.map(j => <option key={j.id} value={j.equipo}>{j.equipo} ({j.nombre})</option>)}
             </select>
-            <select className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesVisitante} onChange={e => setGolesVisitante(e.target.value)} required>
-              <option value="" disabled>-</option>
-              {[...Array(21).keys()].map(num => <option key={num} value={num}>{num}</option>)}
-            </select>
+            <div className="mt-4">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center">Cantidad de goles</label>
+              <select className="w-full p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesVisitante} onChange={e => setGolesVisitante(e.target.value)} required>
+                <option value="" disabled>-</option>
+                {[...Array(21).keys()].map(num => <option key={num} value={num}>{num}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -296,19 +304,21 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
                 </select>
 
                 {inc.tipo === '⚽ Gol' && (
-                  <select 
-                    value={inc.cantidad || 1} 
-                    onChange={e => actualizarIncidencia(index, 'cantidad', parseInt(e.target.value) || 1)} 
-                    className="w-full md:w-20 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none text-center font-bold text-blue-600"
-                    title="Cantidad de goles"
-                  >
-                    {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
-                      <option key={num} value={num}>{num}</option>
-                    ))}
-                  </select>
+                  <div className="w-full md:w-28 flex flex-col">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase text-center mb-1">Cantidad de goles</label>
+                    <select 
+                      value={inc.cantidad || 1} 
+                      onChange={e => actualizarIncidencia(index, 'cantidad', parseInt(e.target.value) || 1)} 
+                      className="w-full p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none text-center font-bold text-blue-600"
+                    >
+                      {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num}>{num}</option>
+                      ))}
+                    </select>
+                  </div>
                 )}
 
-                <button type="button" onClick={() => eliminarIncidencia(index)} className="w-full md:w-auto px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold">X</button>
+                <button type="button" onClick={() => eliminarIncidencia(index)} className="w-full md:w-auto px-3 py-2 mt-2 md:mt-0 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold self-end md:self-auto">X</button>
               </div>
             ))}
           </div>

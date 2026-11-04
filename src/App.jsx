@@ -3,7 +3,29 @@ import html2canvas from 'html2canvas';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore';
 
-// 1. REEMPLAZA ESTO CON TUS CLAVES DE FIREBASE
+// BASE DE DATOS DE JUGADORES FC 27 - LIGA MX (Temporada 26/27)
+const PLANTILLAS_FC27 = {
+  "América": ["Luis Malagón", "Fernando Tapia", "Rodolfo Cota", "César Lugo", "Santiago Múñoz", "Santiago Ramos", "Israel Reyes", "Ramón Juárez", "Miguel Vázquez", "Franco Rossano", "Cristian Borja", "Dagoberto Espinoza", "Kevin Álvarez", "Emilio Lara", "Alan Cervantes", "Ricardo Cariño", "Ivan de la Cruz", "Erick Sánchez", "Carlos Álvarez", "Richard Sánchez", "Diego Valdés", "Brian Rodríguez", "Óscar Perea", "Javairo Dilrosun", "Zinedine González", "Henry Martín", "Miguel Borja"],
+  "Cruz Azul": ["Kevin Mier", "Andrés Gudiño", "Ricardo Rodríguez", "Emmanuel Ochoa", "Willer Ditta", "Jesús Orozco Chiquete", "Alán Montes", "Gonzalo Piovi", "Raymundo Rubio", "Omar Campos", "Ralph Orquin", "Alan Mozo", "Erik Lira", "Amaury García", "Cristian Jiménez", "Jeremy Márquez", "Carlos Rodríguez", "Agustín Palavecino", "José Paradela", "Luka Romero", "Andrés Montaño", "Fernando Sámano", "Carlos Rotondi", "Amaury Morales", "Rogelio González", "Nicolás Ibáñez", "Christian Ebere", "Gabriel Fernández", "Jean Cabral", "Mateo Levy", "Bryan Gamboa"],
+  "Chivas": ["Raúl Rangel", "Óscar Whalley", "Sebastián Liceaga", "Diego Campillo", "José Castillo", "Daniel Aguirre", "Luis Gabriel Rey", "Miguel Tapias", "Bryan González", "Richard Ledezma", "Miguel Gómez", "Omar Govea", "Fernando González", "Luis Romo", "Santiago Sandoval", "Efraín Álvarez", "Brian Gutiérrez", "Jordan Carrillo", "Kevin Castañeda", "Jonathan Pérez", "Roberto Alvarado", "Hugo Camberos", "Ricardo Marín", "Ángel Sepúlveda"],
+  "Toluca": ["Hugo González", "Luis García", "Ronaldo Beltrán", "David Skrem", "Federico Pereira", "Bruno Méndez", "Everardo López", "Luan", "Antonio Briseño", "Brian García", "Jesús Gallardo", "Santiago Simón", "Diego Barbosa", "Franco Romero", "Fernando Arce", "Marcel Ruiz", "Erick Gutiérrez", "Nicolás Castro", "Víctor Guzmán", "Alexis Vega", "Pável Pérez", "Helinho", "Jesús Angulo", "Federico Viñas", "Paulinho", "Iván López", "Jorge Díaz Price", "Oswaldo Virgen"],
+  "Tigres": ["Nahuel Guzmán", "Felipe Rodríguez", "Antonio Carrera", "Joaquim", "Alan Franco", "Jesús Angulo", "Rafael Guerrero", "Marco Farfán", "Osvaldo Rodríguez", "Francisco Reyes", "Fernando Ordóñez", "Jesús Garza", "Vladimir Loroña", "Rômulo", "César Araújo", "Henrique Simeoae", "Fernando Gorriarán", "Juan Pablo Vigón", "Juan Brunetta", "Marcelo Flores", "Emiliano Gómez", "Diego Sánchez", "Mauro Lainez", "Jaidyn Contreras", "Diego Lainez", "Ozziel Herrera", "Rodrigo Aguirre", "Ricardo Monreal", "Guillermo Martínez"],
+  "Monterrey": ["Luis Cárdenas", "Esteban Andrada", "César Ramos", "Víctor Guzmán", "Carlos Salcedo", "César Bustos", "Gerardo Arteaga", "Alonso Aceves", "Luis Reyes", "Ricardo Chávez", "Érick Aguirre", "Stefan Medina", "Javier Casillas", "Fidel Ambriz", "César Garza", "Jorge Rodríguez", "Orbelín Pineda", "Iker Fimbres", "Óliver Torres", "Sebastián Rodríguez", "Paxon Ruffin", "Lucas Ocampos", "Luca Orellano", "Jesús Corona", "Hugo Cuypers", "Diego Rossi", "Roberto de la Rosa", "Uros Djurdjevic"],
+  "Tijuana": ["Antonio Rodríguez", "Salim Hernández", "Alejandro Gómez", "Jackson Porozo", "Unai Bilbao", "Alan Vega", "Pablo Ortiz", "Rafael Fernández", "Aarón Mejía", "Iván Tona", "Ángel Zapata", "Frank Boya", "Ignacio Rivero", "Ramiro Árciga", "Gilberto Mora", "Aldahir Pérez", "Yael Padilla", "Adonis Preciado", "Francisco González", "Diego Abreu", "Mourad El Ghezouani", "Shamar Nicholson", "Elias Manoel"],
+  "Pumas": ["Keylor Navas", "Pablo Lara", "Miguel Paul", "Nathan Silva", "Rubén Duarte", "Ángel Azuaje", "Tony Leone", "Álvaro Angulo", "Cristian Calderón", "Rodrigo López", "Pablo Bennevendo", "Jesús Rivas", "Pablo Monroy", "Santiago Trigos", "Pedro Vite", "Adalberto Carrasquilla", "Víctor Arteaga", "Sebastián Córdova", "Israel Luna", "Ángel Rico", "César Huerta", "Luciano Herrera", "Uriel Antuna", "Alan Medina", "Robert Morales", "Jariel", "José Juan Macías", "Santiago López"],
+  "Atlas": ["Camilo Vargas", "Antonio Sánchez", "Juan José Purata", "Adonis Frías", "Gaddi Aguirre", "Manuel Capasso", "Adrián Mora", "Rivaldo Lozano", "Jorge Rodríguez", "Milton Valenzuela", "Jorge Sánchez", "Víctor Ríos", "Paulo Ramírez", "Édgar Zaldívar", "Aldo Rocha", "Elías Montiel", "Luis Esteves", "Arturo González", "Kevin Zenón", "Sergio Hernández", "Duk", "Luis Gamboa", "Florián Monzón", "Ryan Mmaee"],
+  "León": ["Óscar García", "Julio González", "Jhohan Romaña", "Valentín Gauthier", "Juan Guevara", "Sebastián Vegas", "Paul Bellón", "Salvador Reyes", "Abraham Villegas", "Iván Moreno", "Bryan Colula", "David Ramírez", "Rodrigo Echeverría", "José Rodríguez", "Sebastián Fierro", "Fernando Beltrán", "Ángel Estrada", "Luis Valadez", "Ismael Díaz", "Daniel Arcila", "Juan Domínguez", "Edgar Guerra", "Jordi Cortizo", "Diber Cambindo", "Alfonso Alvarado", "Santiago Londoño"],
+  "Atlante": ["Jordan García", "Óscar Jiménez", "Roberto Barragán", "Aarón Quirós", "Diego Magaña", "Luis Sánchez", "Nico Carrera", "Eduardo Tercero", "Cristóbal Alfaro", "Walter Clar", "Armando Escobar", "Ari Contreras", "Walter Portales", "Hardy Meza", "Eugenio Pizzuto", "Martín Fernández", "Leonardo Mejía", "Jhojan Julio", "Maximiliano García", "Javier Ibarra", "Octavio Vázquez", "Christian Bermúdez", "Martín Sarrafiore", "Luis Calzadilla", "Edgar Jiménez", "Daniel González", "Gilberto Adame", "Luis Puente", "Jairón Charcopa", "Joaquín Moxica"],
+  "Puebla": ["Daniel Gutiérrez", "Jesús Rodríguez", "Facundo Almada", "Eduardo Navarro", "José Pachuca", "Juan Pablo Vargas", "Ángel Leyva", "Fernando Monárrez", "Jair Díaz", "Óscar Villa", "Iker Moreno", "Alberto Herrera", "Alonso Ramírez", "Lucas Camilo", "Eduardo Armenta", "Sergio Sanabria", "Mathías Tomás", "Omar Moreno", "Carlos Baltazar", "Alejandro Organista", "Raúl Castillo", "Heriberto Jurado", "Kevin Velasco", "Brayan Garnica", "Eduardo Mustre", "Ignacio Maestro Puch", "Luifer Hernández"],
+  "Querétaro": ["José Hernández", "Guillermo Allison", "Lucas Abascia", "Diego Reyes", "Carlos Villanueva", "Paulo Victor", "Daniel Parra", "Bayron Duarte", "Sergio García Brothers", "Santiago Homenchenko", "Bernardo Parra", "Carlo García", "Érik Dueñas", "Álex Alcalá", "Muno Martínez", "Jesús Arellano", "Juan Robles", "Denilson Muñoz", "Enzo Giménez", "Iker Benito", "Waldo Madrid", "Alí Ávila", "Mateo Coronel", "Eduardo Pérez"],
+  "Pachuca": ["Carlos Moreno", "José Eulogio", "Sergio Barreto", "Jorge Berlanga", "Eduardo Bauermann", "Pedro Budib", "Francisco Venegas", "Mauricio Isais", "Carlos Sánchez", "Sebastián Santos", "Christian Rivera", "Lenin Rodríguez", "Alán Bautista", "Andrés Arroyo", "Rodolfo Pizarro", "Oussama Idrissi", "Kenedy", "Alexéi Domínguez", "Nicolás Vallejo", "Adrián Alcaraz", "Illian Hernández", "Salomón Rondón"],
+  "Atlético de San Luis": ["Andrés Sánchez", "César López", "Gibrán Lajud", "Eduardo Águila", "Robson Bambu", "Miguel García", "Benjamín Galindo", "Juanpe", "Lucas Esteves", "Aldo Cruz", "Román Torres", "Johan Caicedo", "Roberto Meraz", "Sébastien Salles-Lamonge", "Óscar Macías", "Sebastián Pérez Bouquet", "David Rodríguez", "Rafa Llorente", "Benjamín Galdames", "Anderson Duarte", "Jesús Medina", "João Pedro", "Santiago Muñoz", "Leonardo Flores", "Felipe Mora", "Ronaldo Nájera"],
+  "Necaxa": ["Javier Orantes", "Christopher Andrade", "Luis Jiménez", "Naves", "Agustín Oliveros", "Alexis Peña", "Raúl Martínez", "Francisco Méndez", "Diego Ochoa", "Carlos Vargas", "Emilio Martínez", "Pedro Pedraza", "Danny Leyva", "Lorenzo Faravelli", "Kevin Rosero", "Mauro Zaleta", "Javier Ruiz", "Juan Torres", "Matías Espíndola", "Israel Tello", "Rogelio Cortéz", "Emilio Rodríguez", "Owen González", "Julián Carranza", "Juan Valencia", "Misael Pedroza"],
+  "Juárez": ["Sebastián Jurado", "Benny Díaz", "Guillermo Ruíz", "Gilberto Sepúlveda", "Jesús Murillo", "Haret Ortega", "Daniel Piña", "Bryan Romero", "Alejandro Mayorga", "Eder López", "Francisco Nevárez", "Javier Aquino", "Denzell García", "Rodrigo Dourado", "Lucas Romero", "Said Godínez", "Leonardo Rodríguez", "Monchu", "Guilherme Castilho", "Juan Sigala", "José Luis Rodríguez", "Madson", "Raymundo Fulgencio", "Ricardinho", "Jairo Torres", "Óscar Estupiñán", "Luca Martínez Dupuy", "Ettson Ayón"],
+  "Santos Laguna": ["Carlos Acevedo", "Héctor Holguín", "Bruno Amione", "Franco Pardo", "Efraín Orona", "Felipe Sánchez", "Geovanni Pérez", "Emmanuel Echeverría", "Kevin Picón", "Mauricio Cuevas", "José Abella", "Aldo López", "Salvador Mariscal", "Javier Güémez", "Pedro Aquino", "Facundo Cáseres", "Nelson Cedillo", "Ezequiel Bullaude", "Fran Villalba", "Luis Gómez", "Joshua Mancha", "Kevin Palacios", "Diego González", "Ramiro Sordo", "Diego Medina", "Lucas Di Yorio", "Eduardo Aguirre", "Esteban Lozano", "Tahiel Jiménez"]
+};
+
+// CONFIGURACIÓN DE FIREBASE (Datos exactos de tu proyecto)
 const firebaseConfig = {
   apiKey: "AIzaSyDCfSq7cmCSWMOtlyKq23WOxf6E-7NNU0o",
   authDomain: "fc27torneito-ccb63.firebaseapp.com",
@@ -34,7 +56,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
-      {/* Encabezado Premium */}
       <header className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 text-white shadow-lg pb-6 pt-8 px-4 rounded-b-[2.5rem] mb-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block bg-blue-500/20 px-4 py-1 rounded-full text-blue-200 text-xs font-bold tracking-widest mb-3 border border-blue-400/30">
@@ -43,18 +64,17 @@ export default function App() {
           <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-6">
             LIGA MX <span className="text-blue-400">FC 27</span>
           </h1>
-          
-          {/* Navegación estilo píldora */}
-          <nav className="flex justify-center gap-2 bg-slate-800/50 p-1.5 rounded-full mx-auto max-w-md backdrop-blur-sm border border-slate-700/50">
-            <button onClick={() => setVista('tabla')} className={`flex-1 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${vista === 'tabla' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>🏆 Tabla</button>
-            <button onClick={() => setVista('reportar')} className={`flex-1 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${vista === 'reportar' || vista === 'tarjeta' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>⚽ Reportar</button>
-            <button onClick={() => setVista('admin')} className={`flex-1 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${vista === 'admin' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>⚙️ Admin</button>
+          <nav className="flex flex-wrap justify-center gap-2 bg-slate-800/50 p-2 rounded-2xl mx-auto max-w-2xl backdrop-blur-sm border border-slate-700/50">
+            <button onClick={() => setVista('tabla')} className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex-grow ${vista === 'tabla' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>🏆 General</button>
+            <button onClick={() => setVista('goleadores')} className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex-grow ${vista === 'goleadores' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>⚽ Goleadores</button>
+            <button onClick={() => setVista('reportar')} className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex-grow ${vista === 'reportar' || vista === 'tarjeta' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>📝 Reportar</button>
+            <button onClick={() => setVista('admin')} className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex-grow ${vista === 'admin' ? 'bg-blue-600 shadow-md text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700/50'}`}>⚙️ Admin</button>
           </nav>
         </div>
       </header>
-
       <main className="max-w-4xl mx-auto px-4">
         {vista === 'tabla' && <VistaTablas partidos={partidos} jugadores={jugadores} />}
+        {vista === 'goleadores' && <VistaGoleadores partidos={partidos} jugadores={jugadores} />}
         {vista === 'reportar' && <VistaReportar jugadores={jugadores} setVista={setVista} setResultadoReciente={setResultadoReciente} />}
         {vista === 'tarjeta' && <TarjetaResultado resultado={resultadoReciente} setVista={setVista} />}
         {vista === 'admin' && <VistaAdmin />}
@@ -84,13 +104,13 @@ function VistaTablas({ partidos, jugadores }) {
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
       <div className="bg-slate-50 p-4 border-b border-slate-100 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-800">Clasificación General</h2>
+        <h2 className="text-lg font-bold text-slate-800">🏆 Clasificación General</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
             <tr>
-              <th className="py-4 px-4 text-center w-12">#</th>
+              <th className="py-4 px-4 text-center w-12 font-black text-slate-700">POS</th>
               <th className="py-4 px-4">Jugador</th>
               <th className="py-4 px-4">Equipo</th>
               <th className="py-4 px-3 text-center">PJ</th>
@@ -103,14 +123,83 @@ function VistaTablas({ partidos, jugadores }) {
               <tr><td colSpan="6" className="text-center py-8 text-slate-400">No hay equipos registrados aún.</td></tr>
             ) : tabla.map((fila, i) => (
               <tr key={i} className="hover:bg-blue-50/50 transition-colors">
-                <td className="py-3 px-4 text-center font-bold text-slate-400">{i + 1}</td>
+                <td className="py-3 px-4 text-center font-black text-blue-500">{i + 1}</td>
                 <td className="py-3 px-4 font-semibold text-slate-800">{fila.nombre}</td>
-                <td className="py-3 px-4">
-                  <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">{fila.equipo}</span>
-                </td>
+                <td className="py-3 px-4"><span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">{fila.equipo}</span></td>
                 <td className="py-3 px-3 text-center text-slate-500">{fila.pj}</td>
                 <td className="py-3 px-3 text-center text-slate-500">{fila.dif > 0 ? `+${fila.dif}` : fila.dif}</td>
                 <td className="py-3 px-4 text-center font-black text-blue-600 text-base">{fila.pts}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function VistaGoleadores({ partidos, jugadores }) {
+  const conteoGoles = {};
+
+  partidos.forEach(p => {
+    if (p.incidencias) {
+      p.incidencias.forEach(inc => {
+        if (inc.tipo === '⚽ Gol' && inc.jugador) {
+          const key = `${inc.jugador}-${inc.equipo}`;
+          if (!conteoGoles[key]) {
+            const owner = jugadores.find(j => j.equipo === inc.equipo)?.nombre || 'Desconocido';
+            conteoGoles[key] = { jugadorFC: inc.jugador, equipo: inc.equipo, manager: owner, goles: 0 };
+          }
+          conteoGoles[key].goles += 1;
+        }
+      });
+    } else if (p.anotadores) {
+      p.anotadores.forEach(a => {
+        if (a.startsWith('⚽')) {
+          const match = a.match(/⚽ (.*) \((.*)\)/);
+          if (match) {
+            const jugFC = match[1];
+            const eq = match[2];
+            const key = `${jugFC}-${eq}`;
+            if (!conteoGoles[key]) {
+              const owner = jugadores.find(j => j.equipo === eq)?.nombre || 'Desconocido';
+              conteoGoles[key] = { jugadorFC: jugFC, equipo: eq, manager: owner, goles: 0 };
+            }
+            conteoGoles[key].goles += 1;
+          }
+        }
+      });
+    }
+  });
+
+  const tablaGoleadores = Object.values(conteoGoles).sort((a, b) => b.goles - a.goles);
+
+  return (
+    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+      <div className="bg-slate-50 p-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-slate-800">⚽ Tabla de Goleadores</h2>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left whitespace-nowrap">
+          <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+            <tr>
+              <th className="py-4 px-4 text-center w-12 font-black text-slate-700">POS</th>
+              <th className="py-4 px-4">Jugador (FC 27)</th>
+              <th className="py-4 px-4">Equipo Liga MX</th>
+              <th className="py-4 px-4">Mánager (Amigo)</th>
+              <th className="py-4 px-4 text-center font-bold text-slate-800">Goles</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {tablaGoleadores.length === 0 ? (
+              <tr><td colSpan="5" className="text-center py-8 text-slate-400">Aún no hay goles registrados.</td></tr>
+            ) : tablaGoleadores.map((fila, i) => (
+              <tr key={i} className="hover:bg-blue-50/50 transition-colors">
+                <td className="py-3 px-4 text-center font-black text-blue-500">{i + 1}</td>
+                <td className="py-3 px-4 font-semibold text-slate-800">{fila.jugadorFC}</td>
+                <td className="py-3 px-4"><span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">{fila.equipo}</span></td>
+                <td className="py-3 px-4 font-medium text-blue-600">{fila.manager}</td>
+                <td className="py-3 px-4 text-center font-black text-blue-600 text-base">{fila.goles}</td>
               </tr>
             ))}
           </tbody>
@@ -125,18 +214,36 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
   const [visitante, setVisitante] = useState('');
   const [golesLocal, setGolesLocal] = useState('');
   const [golesVisitante, setGolesVisitante] = useState('');
-  const [anotadoresTexto, setAnotadoresTexto] = useState('');
+  const [incidencias, setIncidencias] = useState([]);
   
+  const agregarIncidencia = () => {
+    if (!local && !visitante) return alert('Selecciona los equipos primero');
+    setIncidencias([...incidencias, { equipo: local || visitante, tipo: '⚽ Gol', jugador: '' }]);
+  };
+
+  const actualizarIncidencia = (index, campo, valor) => {
+    const nuevas = [...incidencias];
+    nuevas[index][campo] = valor;
+    if (campo === 'equipo') nuevas[index].jugador = '';
+    setIncidencias(nuevas);
+  };
+
+  const eliminarIncidencia = (index) => {
+    setIncidencias(incidencias.filter((_, i) => i !== index));
+  };
+
   const guardarResultado = async (e) => {
     e.preventDefault();
     if (!local || !visitante || local === visitante) return alert('Selecciona equipos válidos diferentes.');
     if (golesLocal === '' || golesVisitante === '') return alert('Ingresa los goles.');
     
+    const anotadoresMapeados = incidencias.map(inc => `${inc.tipo.split(' ')[0]} ${inc.jugador} (${inc.equipo})`);
+
     const nuevoPartido = {
       local, visitante, 
-      golesLocal: parseInt(golesLocal), 
-      golesVisitante: parseInt(golesVisitante),
-      anotadores: anotadoresTexto.split(',').map(a => a.trim()).filter(a => a)
+      golesLocal: parseInt(golesLocal), golesVisitante: parseInt(golesVisitante),
+      anotadores: anotadoresMapeados,
+      incidencias: incidencias
     };
 
     await addDoc(collection(db, 'partidos'), nuevoPartido);
@@ -153,39 +260,52 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
       
       <form onSubmit={guardarResultado} className="p-6 md:p-8 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-          {/* Divisor VS solo visible en desktop */}
           <div className="hidden md:flex absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 text-white w-10 h-10 rounded-full items-center justify-center font-black text-sm z-10 shadow-lg border-4 border-white">VS</div>
-
-          {/* Local */}
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative">
             <div className="absolute -top-3 left-4 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">LOCAL</div>
-            <select className="w-full mt-2 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-slate-700 font-medium transition-all" value={local} onChange={e => setLocal(e.target.value)} required>
+            <select className="w-full mt-2 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium" value={local} onChange={e => setLocal(e.target.value)} required>
               <option value="">Elegir Equipo...</option>
               {jugadores.map(j => <option key={j.id} value={j.equipo}>{j.equipo} ({j.nombre})</option>)}
             </select>
-            <input type="number" min="0" placeholder="0" className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={golesLocal} onChange={e => setGolesLocal(e.target.value)} required/>
+            <input type="number" min="0" placeholder="0" className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesLocal} onChange={e => setGolesLocal(e.target.value)} required/>
           </div>
-
-          {/* Visitante */}
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative">
             <div className="absolute -top-3 left-4 bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">VISITANTE</div>
-            <select className="w-full mt-2 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-slate-700 font-medium transition-all" value={visitante} onChange={e => setVisitante(e.target.value)} required>
+            <select className="w-full mt-2 p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium" value={visitante} onChange={e => setVisitante(e.target.value)} required>
               <option value="">Elegir Equipo...</option>
               {jugadores.map(j => <option key={j.id} value={j.equipo}>{j.equipo} ({j.nombre})</option>)}
             </select>
-            <input type="number" min="0" placeholder="0" className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={golesVisitante} onChange={e => setGolesVisitante(e.target.value)} required/>
+            <input type="number" min="0" placeholder="0" className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesVisitante} onChange={e => setGolesVisitante(e.target.value)} required/>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">Incidencias (Goleadores y Tarjetas)</label>
-          <textarea 
-            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none" 
-            rows="3" 
-            placeholder="Ej: Rondón x2, Canales 🟨, Idrissi 🟥 (Sepáralos por comas)"
-            value={anotadoresTexto}
-            onChange={e => setAnotadoresTexto(e.target.value)}
-          ></textarea>
+        <div className="border-t border-slate-100 pt-6">
+          <label className="block text-sm font-bold text-slate-700 mb-4">Eventos (Goles, Rojas, Amarillas)</label>
+          <div className="space-y-3">
+            {incidencias.map((inc, index) => (
+              <div key={index} className="flex flex-col md:flex-row gap-2 items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <select value={inc.equipo} onChange={e => actualizarIncidencia(index, 'equipo', e.target.value)} className="w-full md:w-1/4 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none">
+                  {local && <option value={local}>{local}</option>}
+                  {visitante && <option value={visitante}>{visitante}</option>}
+                </select>
+                <select value={inc.tipo} onChange={e => actualizarIncidencia(index, 'tipo', e.target.value)} className="w-full md:w-1/4 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none font-bold">
+                  <option value="⚽ Gol">⚽ Gol</option>
+                  <option value="🟨 Amarilla">🟨 Amarilla</option>
+                  <option value="🟥 Roja">🟥 Roja</option>
+                </select>
+                <select value={inc.jugador} onChange={e => actualizarIncidencia(index, 'jugador', e.target.value)} className="w-full md:w-2/4 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none">
+                  <option value="">Seleccionar Jugador...</option>
+                  {(PLANTILLAS_FC27[inc.equipo] || ['Plantilla no registrada']).map((jug, i) => (
+                    <option key={i} value={jug}>{jug}</option>
+                  ))}
+                </select>
+                <button type="button" onClick={() => eliminarIncidencia(index)} className="w-full md:w-auto px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold">X</button>
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={agregarIncidencia} className="mt-4 w-full border-2 border-dashed border-blue-300 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors">
+            + Añadir Jugador al Reporte
+          </button>
         </div>
 
         <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transform transition-transform active:scale-[0.98]">
@@ -198,71 +318,45 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
 
 function TarjetaResultado({ resultado, setVista }) {
   const tarjetaRef = useRef(null);
-
   const compartirWhatsApp = async () => {
     if (!tarjetaRef.current) return;
     const canvas = await html2canvas(tarjetaRef.current, { useCORS: true, backgroundColor: null, scale: 2 });
-    
     canvas.toBlob(async (blob) => {
       const file = new File([blob], 'marcador.png', { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ title: `Resultado: ${resultado.local} vs ${resultado.visitante}`, files: [file] });
-        } catch (error) { console.log('Cancelado'); }
+        try { await navigator.share({ title: `Resultado: ${resultado.local} vs ${resultado.visitante}`, files: [file] }); } 
+        catch (error) { console.log('Cancelado'); }
       } else {
-        const link = document.createElement('a');
-        link.download = 'marcador.png'; link.href = canvas.toDataURL(); link.click();
+        const link = document.createElement('a'); link.download = 'marcador.png'; link.href = canvas.toDataURL(); link.click();
       }
     });
   };
-
   if (!resultado) return null;
-
   return (
     <div className="flex flex-col items-center">
-      <div 
-        ref={tarjetaRef} 
-        className="w-full max-w-sm bg-slate-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden border border-slate-700"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1518605368461-1e1e38ce1542?auto=format&fit=crop&q=80&w=800")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'overlay', backgroundColor: 'rgba(15, 23, 42, 0.9)' }}
-      >
-        <div className="text-center mb-8">
-          <span className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full text-xs font-black tracking-[0.2em] text-white/90 shadow-sm">
-            LIGA MX • FC 27
-          </span>
-        </div>
-        
+      <div ref={tarjetaRef} className="w-full max-w-sm bg-slate-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden border border-slate-700" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1518605368461-1e1e38ce1542?auto=format&fit=crop&q=80&w=800")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'overlay', backgroundColor: 'rgba(15, 23, 42, 0.9)' }}>
+        <div className="text-center mb-8"><span className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full text-xs font-black tracking-[0.2em] text-white/90 shadow-sm">LIGA MX • FC 27</span></div>
         <div className="flex justify-between items-center text-xl font-black mb-8 relative">
           <span className="w-[35%] text-right truncate text-white/90 drop-shadow-md pr-2">{resultado.local}</span>
           <div className="w-[30%] text-center flex flex-col items-center">
-            <span className="text-5xl text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.4)] tracking-tighter">
-              {resultado.golesLocal}-{resultado.golesVisitante}
-            </span>
+            <span className="text-5xl text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.4)] tracking-tighter">{resultado.golesLocal}-{resultado.golesVisitante}</span>
             <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest mt-2">Final</span>
           </div>
           <span className="w-[35%] text-left truncate text-white/90 drop-shadow-md pl-2">{resultado.visitante}</span>
         </div>
-
         {resultado.anotadores && resultado.anotadores.length > 0 && (
           <div className="bg-black/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-inner">
             <p className="font-bold text-white/40 text-[10px] uppercase tracking-wider mb-3">Reporte del partido</p>
             <ul className="space-y-2 text-sm font-medium text-white/90">
-              {resultado.anotadores.map((a, i) => (
-                <li key={i} className="flex items-center gap-2">
-                  <span className="opacity-80">⚽</span> {a}
-                </li>
-              ))}
+              {resultado.anotadores.map((a, i) => (<li key={i} className="flex items-center gap-2">{a}</li>))}
             </ul>
           </div>
         )}
       </div>
-
       <button onClick={compartirWhatsApp} className="mt-8 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-[#25D366]/30 flex items-center gap-3 transform transition-transform active:scale-95 w-full max-w-sm justify-center">
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.387 0 12.035c0 2.128.553 4.2 1.603 6.03L.416 24l6.113-1.605A11.97 11.97 0 0012.031 24c6.645 0 12.031-5.388 12.031-12.035S18.676 0 12.031 0zm0 22.015c-1.802 0-3.565-.486-5.113-1.405l-.367-.217-3.799.996 1.016-3.705-.238-.379A10.027 10.027 0 012.015 12.03c0-5.541 4.512-10.05 10.05-10.05 5.54 0 10.048 4.509 10.048 10.05s-4.508 10.05-10.048 10.05zm5.513-7.53c-.302-.152-1.787-.882-2.063-.983-.277-.101-.478-.152-.68.151-.201.303-.781.983-.957 1.185-.176.202-.353.227-.655.076-1.583-.787-2.618-1.5-3.6-3.21-.101-.176-.011-.271.14-.422.136-.136.302-.353.453-.53.151-.176.201-.302.302-.504.101-.202.05-.378-.025-.53-.076-.152-.68-1.637-.932-2.243-.245-.591-.494-.51-.68-.52-.176-.01-.377-.01-.579-.01-.201 0-.528.076-.804.378-.276.302-1.055 1.033-1.055 2.519s1.08 2.92 1.231 3.122c.151.201 2.13 3.25 5.16 4.558 1.942.836 2.68.756 3.183.635.539-.129 1.787-.73 2.038-1.436.252-.705.252-1.31.176-1.436-.076-.126-.277-.201-.579-.353z"/></svg>
-        Enviar al Grupo de Ema
+        Enviar al Grupo de WhatsApp
       </button>
-      <button onClick={() => setVista('tabla')} className="mt-4 text-slate-500 font-medium hover:text-slate-800 transition-colors">
-        Volver a las tablas
-      </button>
+      <button onClick={() => setVista('tabla')} className="mt-4 text-slate-500 font-medium hover:text-slate-800 transition-colors">Volver a las tablas</button>
     </div>
   );
 }
@@ -271,7 +365,6 @@ function VistaAdmin() {
   const [pass, setPass] = useState('');
   const [nombre, setNombre] = useState('');
   const [equipo, setEquipo] = useState('');
-  
   if (pass !== 'admin123') {
     return (
       <div className="max-w-sm mx-auto mt-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100 text-center">
@@ -282,21 +375,18 @@ function VistaAdmin() {
       </div>
     );
   }
-
   const agregarJugador = async (e) => {
     e.preventDefault();
     await addDoc(collection(db, 'jugadores'), { nombre, equipo });
     setNombre(''); setEquipo('');
     alert('✅ Participante agregado correctamente a la base de datos.');
   };
-
   return (
     <div className="max-w-md mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-100">
       <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
         <span className="text-2xl">⚙️</span>
         <h2 className="text-xl font-bold text-slate-800">Panel de Administración</h2>
       </div>
-      
       <form onSubmit={agregarJugador} className="space-y-4">
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre o ID del Jugador</label>
@@ -306,9 +396,7 @@ function VistaAdmin() {
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Equipo Liga MX</label>
           <input type="text" placeholder="Ej. Pachuca" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={equipo} onChange={e => setEquipo(e.target.value)} required />
         </div>
-        <button type="submit" className="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-colors">
-          + Inscribir Participante
-        </button>
+        <button type="submit" className="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-colors">+ Inscribir Participante</button>
       </form>
     </div>
   );

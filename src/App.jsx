@@ -25,7 +25,7 @@ const PLANTILLAS_FC27 = {
   "Santos Laguna": ["Carlos Acevedo", "Héctor Holguín", "Bruno Amione", "Franco Pardo", "Efraín Orona", "Felipe Sánchez", "Geovanni Pérez", "Emmanuel Echeverría", "Kevin Picón", "Mauricio Cuevas", "José Abella", "Aldo López", "Salvador Mariscal", "Javier Güémez", "Pedro Aquino", "Facundo Cáseres", "Nelson Cedillo", "Ezequiel Bullaude", "Fran Villalba", "Luis Gómez", "Joshua Mancha", "Kevin Palacios", "Diego González", "Ramiro Sordo", "Diego Medina", "Lucas Di Yorio", "Eduardo Aguirre", "Esteban Lozano", "Tahiel Jiménez"]
 };
 
-// CONFIGURACIÓN DE FIREBASE (Datos exactos de tu proyecto)
+// CONFIGURACIÓN DE FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyDCfSq7cmCSWMOtlyKq23WOxf6E-7NNU0o",
   authDomain: "fc27torneito-ccb63.firebaseapp.com",
@@ -254,7 +254,10 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
               <option value="">Elegir Equipo...</option>
               {jugadores.map(j => <option key={j.id} value={j.equipo}>{j.equipo} ({j.nombre})</option>)}
             </select>
-            <input type="number" min="0" placeholder="0" className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesLocal} onChange={e => setGolesLocal(e.target.value)} required/>
+            <select className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesLocal} onChange={e => setGolesLocal(e.target.value)} required>
+              <option value="" disabled>-</option>
+              {[...Array(21).keys()].map(num => <option key={num} value={num}>{num}</option>)}
+            </select>
           </div>
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative">
             <div className="absolute -top-3 left-4 bg-slate-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">VISITANTE</div>
@@ -262,7 +265,10 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
               <option value="">Elegir Equipo...</option>
               {jugadores.map(j => <option key={j.id} value={j.equipo}>{j.equipo} ({j.nombre})</option>)}
             </select>
-            <input type="number" min="0" placeholder="0" className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesVisitante} onChange={e => setGolesVisitante(e.target.value)} required/>
+            <select className="w-full mt-4 p-4 text-4xl text-center bg-white border border-slate-200 rounded-xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none" value={golesVisitante} onChange={e => setGolesVisitante(e.target.value)} required>
+              <option value="" disabled>-</option>
+              {[...Array(21).keys()].map(num => <option key={num} value={num}>{num}</option>)}
+            </select>
           </div>
         </div>
 
@@ -290,15 +296,16 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
                 </select>
 
                 {inc.tipo === '⚽ Gol' && (
-                  <input 
-                    type="number" 
-                    min="1" 
-                    placeholder="Goles"
+                  <select 
                     value={inc.cantidad || 1} 
                     onChange={e => actualizarIncidencia(index, 'cantidad', parseInt(e.target.value) || 1)} 
                     className="w-full md:w-20 p-2 text-sm bg-white border border-slate-200 rounded-lg outline-none text-center font-bold text-blue-600"
                     title="Cantidad de goles"
-                  />
+                  >
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map(num => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
                 )}
 
                 <button type="button" onClick={() => eliminarIncidencia(index)} className="w-full md:w-auto px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold">X</button>

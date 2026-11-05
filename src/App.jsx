@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 
 // BASE DE DATOS DE JUGADORES FC 27 - LIGA MX (Temporada 26/27)
 const PLANTILLAS_FC27 = {
-  "America": ["Luis Malagón", "Fernando Tapia", "Rodolfo Cota", "César Lugo", "Santiago Múñoz", "Santiago Ramos", "Israel Reyes", "Ramón Juárez", "Miguel Vázquez", "Franco Rossano", "Cristian Borja", "Dagoberto Espinoza", "Kevin Álvarez", "Emilio Lara", "Alan Cervantes", "Ricardo Cariño", "Ivan de la Cruz", "Erick Sánchez", "Carlos Álvarez", "Richard Sánchez", "Diego Valdés", "Brian Rodríguez", "Óscar Perea", "Javairo Dilrosun", "Zinedine González", "Henry Martín", "Miguel Borja"],
+  "América": ["Luis Malagón", "Fernando Tapia", "Rodolfo Cota", "César Lugo", "Santiago Múñoz", "Santiago Ramos", "Israel Reyes", "Ramón Juárez", "Miguel Vázquez", "Franco Rossano", "Cristian Borja", "Dagoberto Espinoza", "Kevin Álvarez", "Emilio Lara", "Alan Cervantes", "Ricardo Cariño", "Ivan de la Cruz", "Erick Sánchez", "Carlos Álvarez", "Richard Sánchez", "Diego Valdés", "Brian Rodríguez", "Óscar Perea", "Javairo Dilrosun", "Zinedine González", "Henry Martín", "Miguel Borja"],
   "Cruz Azul": ["Kevin Mier", "Andrés Gudiño", "Ricardo Rodríguez", "Emmanuel Ochoa", "Willer Ditta", "Jesús Orozco Chiquete", "Alán Montes", "Gonzalo Piovi", "Raymundo Rubio", "Omar Campos", "Ralph Orquin", "Alan Mozo", "Erik Lira", "Amaury García", "Cristian Jiménez", "Jeremy Márquez", "Carlos Rodríguez", "Agustín Palavecino", "José Paradela", "Luka Romero", "Andrés Montaño", "Fernando Sámano", "Carlos Rotondi", "Amaury Morales", "Rogelio González", "Nicolás Ibáñez", "Christian Ebere", "Gabriel Fernández", "Jean Cabral", "Mateo Levy", "Bryan Gamboa"],
-  "Chivas": ["Hormigol","Raúl Rangel", "Óscar Whalley", "Sebastián Liceaga", "Diego Campillo", "José Castillo", "Daniel Aguirre", "Luis Gabriel Rey", "Miguel Tapias", "Bryan González", "Richard Ledezma", "Miguel Gómez", "Omar Govea", "Fernando González", "Luis Romo", "Santiago Sandoval", "Efraín Álvarez", "Brian Gutiérrez", "Jordan Carrillo", "Kevin Castañeda", "Jonathan Pérez", "Roberto Alvarado", "Hugo Camberos", "Ricardo Marín", "Ángel Sepúlveda"],
+  "Chivas": ["Raúl Rangel", "Óscar Whalley", "Sebastián Liceaga", "Diego Campillo", "José Castillo", "Daniel Aguirre", "Luis Gabriel Rey", "Miguel Tapias", "Bryan González", "Richard Ledezma", "Miguel Gómez", "Omar Govea", "Fernando González", "Luis Romo", "Santiago Sandoval", "Efraín Álvarez", "Brian Gutiérrez", "Jordan Carrillo", "Kevin Castañeda", "Jonathan Pérez", "Roberto Alvarado", "Hugo Camberos", "Ricardo Marín", "Ángel Sepúlveda"],
   "Toluca": ["Hugo González", "Luis García", "Ronaldo Beltrán", "David Skrem", "Federico Pereira", "Bruno Méndez", "Everardo López", "Luan", "Antonio Briseño", "Brian García", "Jesús Gallardo", "Santiago Simón", "Diego Barbosa", "Franco Romero", "Fernando Arce", "Marcel Ruiz", "Erick Gutiérrez", "Nicolás Castro", "Víctor Guzmán", "Alexis Vega", "Pável Pérez", "Helinho", "Jesús Angulo", "Federico Viñas", "Paulinho", "Iván López", "Jorge Díaz Price", "Oswaldo Virgen"],
   "Tigres": ["Nahuel Guzmán", "Felipe Rodríguez", "Antonio Carrera", "Joaquim", "Alan Franco", "Jesús Angulo", "Rafael Guerrero", "Marco Farfán", "Osvaldo Rodríguez", "Francisco Reyes", "Fernando Ordóñez", "Jesús Garza", "Vladimir Loroña", "Rômulo", "César Araújo", "Henrique Simeoae", "Fernando Gorriarán", "Juan Pablo Vigón", "Juan Brunetta", "Marcelo Flores", "Emiliano Gómez", "Diego Sánchez", "Mauro Lainez", "Jaidyn Contreras", "Diego Lainez", "Ozziel Herrera", "Rodrigo Aguirre", "Ricardo Monreal", "Guillermo Martínez"],
   "Monterrey": ["Luis Cárdenas", "Esteban Andrada", "César Ramos", "Víctor Guzmán", "Carlos Salcedo", "César Bustos", "Gerardo Arteaga", "Alonso Aceves", "Luis Reyes", "Ricardo Chávez", "Érick Aguirre", "Stefan Medina", "Javier Casillas", "Fidel Ambriz", "César Garza", "Jorge Rodríguez", "Orbelín Pineda", "Iker Fimbres", "Óliver Torres", "Sebastián Rodríguez", "Paxon Ruffin", "Lucas Ocampos", "Luca Orellano", "Jesús Corona", "Hugo Cuypers", "Diego Rossi", "Roberto de la Rosa", "Uros Djurdjevic"],
@@ -78,30 +78,38 @@ export default function App() {
         {vista === 'goleadores' && <VistaGoleadores partidos={partidos} jugadores={jugadores} />}
         {vista === 'resultados' && <VistaResultados partidos={partidos} jugadores={jugadores} />}
         {vista === 'reportar' && <VistaReportar jugadores={jugadores} setVista={setVista} setResultadoReciente={setResultadoReciente} />}
-        {vista === 'tarjeta' && <TarjetaResultado resultado={resultadoReciente} setVista={setVista} />}
-        {vista === 'admin' && <VistaAdmin />}
+        {vista === 'tarjeta' && <TarjetaResultado resultado={resultadoReciente} jugadores={jugadores} setVista={setVista} />}
+        {vista === 'admin' && <VistaAdmin partidos={partidos} db={db} />}
       </main>
     </div>
   );
 }
 
 function VistaTablas({ partidos, jugadores }) {
+  const [expandido, setExpandido] = useState(null);
+  
   const tabla = jugadores.map(j => {
-    let pts = 0, pj = 0, gf = 0, gc = 0;
+    let pts = 0, pj = 0, gf = 0, gc = 0, pg = 0, pe = 0, pp = 0;
     partidos.forEach(p => {
       if (p.local === j.equipo) {
         pj++; gf += p.golesLocal; gc += p.golesVisitante;
-        if (p.golesLocal > p.golesVisitante) pts += 3;
-        else if (p.golesLocal === p.golesVisitante) pts += 1;
+        if (p.golesLocal > p.golesVisitante) { pts += 3; pg++; }
+        else if (p.golesLocal === p.golesVisitante) { pts += 1; pe++; }
+        else pp++;
       }
       if (p.visitante === j.equipo) {
         pj++; gf += p.golesVisitante; gc += p.golesLocal;
-        if (p.golesVisitante > p.golesLocal) pts += 3;
-        else if (p.golesVisitante === p.golesLocal) pts += 1;
+        if (p.golesVisitante > p.golesLocal) { pts += 3; pg++; }
+        else if (p.golesVisitante === p.golesLocal) { pts += 1; pe++; }
+        else pp++;
       }
     });
-    return { ...j, pts, pj, gf, gc, dif: gf - gc };
-  }).sort((a, b) => b.pts - a.pts || b.dif - a.dif);
+    return { ...j, pts, pj, gf, gc, pg, pe, pp, dif: gf - gc };
+  }).sort((a, b) => b.pts - a.pts || b.dif - a.dif || b.gf - a.gf);
+
+  const toggleFila = (id) => {
+    setExpandido(expandido === id ? null : id);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
@@ -112,27 +120,70 @@ function VistaTablas({ partidos, jugadores }) {
         <table className="w-full text-sm text-left whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
             <tr>
-              <th className="py-4 px-4 text-center w-12 font-black text-slate-700">POS</th>
-              <th className="py-4 px-4">Jugador</th>
-              <th className="py-4 px-4">Equipo</th>
-              <th className="py-4 px-3 text-center">PJ</th>
-              <th className="py-4 px-3 text-center">DIF</th>
+              <th className="py-4 px-3 text-center w-12 font-black text-slate-700">POS</th>
+              <th className="py-4 px-4">Mánager</th>
+              <th className="py-4 px-3">Equipo</th>
+              <th className="py-4 px-2 text-center">PJ</th>
+              <th className="py-4 px-2 text-center hidden md:table-cell">G</th>
+              <th className="py-4 px-2 text-center hidden md:table-cell">E</th>
+              <th className="py-4 px-2 text-center hidden md:table-cell">P</th>
+              <th className="py-4 px-2 text-center">GF-GC</th>
+              <th className="py-4 px-2 text-center">DIF</th>
               <th className="py-4 px-4 text-center font-bold text-slate-800">PTS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {tabla.length === 0 ? (
-              <tr><td colSpan="6" className="text-center py-8 text-slate-400">No hay equipos registrados aún.</td></tr>
-            ) : tabla.map((fila, i) => (
-              <tr key={i} className="hover:bg-blue-50/50 transition-colors">
-                <td className="py-3 px-4 text-center font-black text-blue-500">{i + 1}</td>
-                <td className="py-3 px-4 font-semibold text-slate-800">{fila.nombre}</td>
-                <td className="py-3 px-4"><span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">{fila.equipo}</span></td>
-                <td className="py-3 px-3 text-center text-slate-500">{fila.pj}</td>
-                <td className="py-3 px-3 text-center text-slate-500">{fila.dif > 0 ? `+${fila.dif}` : fila.dif}</td>
-                <td className="py-3 px-4 text-center font-black text-blue-600 text-base">{fila.pts}</td>
-              </tr>
-            ))}
+              <tr><td colSpan="10" className="text-center py-8 text-slate-400">No hay equipos registrados aún.</td></tr>
+            ) : tabla.map((fila, i) => {
+              const isFirst = i === 0;
+              const isLast = i === tabla.length - 1 && tabla.length > 1;
+              const isExpanded = expandido === fila.id;
+              
+              return (
+                <React.Fragment key={fila.id}>
+                  <tr 
+                    onClick={() => toggleFila(fila.id)}
+                    className={`hover:bg-blue-50/40 transition-colors cursor-pointer ${isFirst ? 'bg-amber-50/30' : ''} ${isLast ? 'bg-red-50/10' : ''}`}
+                  >
+                    <td className={`py-3.5 px-3 text-center font-black ${isFirst ? 'text-amber-500 text-base' : 'text-slate-400'}`}>
+                      {i + 1}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                        {fila.nombre}
+                        {isFirst && <span>👑</span>}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                        {fila.equipo}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-2 text-center font-medium text-slate-600">{fila.pj}</td>
+                    <td className="py-3.5 px-2 text-center text-slate-500 hidden md:table-cell">{fila.pg}</td>
+                    <td className="py-3.5 px-2 text-center text-slate-500 hidden md:table-cell">{fila.pe}</td>
+                    <td className="py-3.5 px-2 text-center text-slate-500 hidden md:table-cell">{fila.pp}</td>
+                    <td className="py-3.5 px-2 text-center text-slate-500 text-xs">{fila.gf}-{fila.gc}</td>
+                    <td className={`py-3.5 px-2 text-center font-bold text-xs ${fila.dif > 0 ? 'text-emerald-600' : fila.dif < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
+                      {fila.dif > 0 ? `+${fila.dif}` : fila.dif}
+                    </td>
+                    <td className="py-3.5 px-4 text-center font-black text-blue-600 text-base">{fila.pts}</td>
+                  </tr>
+                  {isExpanded && (
+                    <tr className="bg-slate-50/60 md:hidden">
+                      <td colSpan="10" className="px-6 py-2.5 text-xs text-slate-600 bg-blue-50/20">
+                        <div className="flex justify-between max-w-xs mx-auto py-1">
+                          <span>Ganados: <strong>{fila.pg}</strong></span>
+                          <span>Empatados: <strong>{fila.pe}</strong></span>
+                          <span>Perdidos: <strong>{fila.pp}</strong></span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -175,7 +226,7 @@ function VistaGoleadores({ partidos, jugadores }) {
     }
   });
 
-  const tablaGoleadores = Object.values(conteoGoles).sort((a, b) => b.goles - a.goles);
+  const tablaGoleadores = Object.values(conteoGoles).sort((a, b) => b.goles - a.goles || a.jugadorFC.localeCompare(b.jugadorFC));
   const toggleExpandir = (id) => setExpandido(expandido === id ? null : id);
 
   return (
@@ -257,7 +308,7 @@ function VistaResultados({ partidos, jugadores }) {
         const managerVisitante = jugadores.find(j => j.equipo === p.visitante)?.nombre || '';
 
         return (
-          <div key={i} className="bg-white rounded-2xl shadow-md border border-slate-100 p-5 flex flex-col relative overflow-hidden transition-all hover:shadow-lg">
+          <div key={p.id || i} className="bg-white rounded-2xl shadow-md border border-slate-100 p-5 flex flex-col relative overflow-hidden transition-all hover:shadow-lg">
             
             {p.jornada && (
               <div className="text-center text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">
@@ -265,25 +316,25 @@ function VistaResultados({ partidos, jugadores }) {
               </div>
             )}
 
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 gap-2">
               <div className="w-[35%] text-right">
-                <div className="font-black text-slate-800 text-sm md:text-base">{p.local}</div>
-                <div className="text-xs text-slate-500 font-medium">{managerLocal}</div>
+                <div className="font-black text-slate-800 text-sm md:text-base leading-tight">{p.local}</div>
+                <div className="text-xs text-slate-400 font-semibold">{managerLocal}</div>
               </div>
-              <div className="w-[30%] flex justify-center">
-                <div className="w-full max-w-[80px] text-center font-black text-2xl text-white bg-slate-900 rounded-xl py-1.5 shadow-sm">
+              <div className="w-[30%] flex justify-center flex-shrink-0">
+                <div className="w-full max-w-[90px] text-center font-black text-xl md:text-2xl text-white bg-slate-900 rounded-xl py-2 shadow-sm whitespace-nowrap">
                   {p.golesLocal} - {p.golesVisitante}
                 </div>
               </div>
               <div className="w-[35%] text-left">
-                <div className="font-black text-slate-800 text-sm md:text-base">{p.visitante}</div>
-                <div className="text-xs text-slate-500 font-medium">{managerVisitante}</div>
+                <div className="font-black text-slate-800 text-sm md:text-base leading-tight">{p.visitante}</div>
+                <div className="text-xs text-slate-400 font-semibold">{managerVisitante}</div>
               </div>
             </div>
 
             {p.anotadores && p.anotadores.length > 0 && (
-              <div className="bg-slate-50 rounded-xl p-3 text-[11px] md:text-xs text-slate-600 border border-slate-100">
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+              <div className="bg-slate-50 rounded-xl p-3.5 text-[11px] md:text-xs text-slate-600 border border-slate-100">
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                   {p.anotadores.map((a, j) => (
                     <li key={j} className="flex items-center gap-1.5 font-medium">{a}</li>
                   ))}
@@ -455,8 +506,9 @@ function VistaReportar({ jugadores, setVista, setResultadoReciente }) {
   );
 }
 
-function TarjetaResultado({ resultado, setVista }) {
+function TarjetaResultado({ resultado, jugadores, setVista }) {
   const tarjetaRef = useRef(null);
+  
   const compartirWhatsApp = async () => {
     if (!tarjetaRef.current) return;
     const canvas = await html2canvas(tarjetaRef.current, { useCORS: true, backgroundColor: null, scale: 2 });
@@ -470,40 +522,83 @@ function TarjetaResultado({ resultado, setVista }) {
       }
     });
   };
+
   if (!resultado) return null;
+
+  const managerLocal = jugadores.find(j => j.equipo === resultado.local)?.nombre || '';
+  const managerVisitante = jugadores.find(j => j.equipo === resultado.visitante)?.nombre || '';
+
   return (
     <div className="flex flex-col items-center">
-      <div ref={tarjetaRef} className="w-full max-w-sm bg-slate-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden border border-slate-700" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1518605368461-1e1e38ce1542?auto=format&fit=crop&q=80&w=800")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'overlay', backgroundColor: 'rgba(15, 23, 42, 0.9)' }}>
-        <div className="text-center mb-8"><span className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] text-white/90 shadow-sm uppercase">LIGA MX • {resultado.jornada || 'FC 27'}</span></div>
-        <div className="flex justify-between items-center text-xl font-black mb-8 relative">
-          <span className="w-[35%] text-right truncate text-white/90 drop-shadow-md pr-2">{resultado.local}</span>
-          <div className="w-[30%] text-center flex flex-col items-center">
-            <span className="text-5xl text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.4)] tracking-tighter">{resultado.golesLocal}-{resultado.golesVisitante}</span>
-            <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest mt-2">Final</span>
-          </div>
-          <span className="w-[35%] text-left truncate text-white/90 drop-shadow-md pl-2">{resultado.visitante}</span>
+      <div 
+        ref={tarjetaRef} 
+        className="w-full max-w-sm bg-slate-950 text-white p-7 rounded-[2rem] shadow-2xl relative overflow-hidden border border-slate-800 flex flex-col" 
+        style={{ 
+          backgroundImage: 'url("https://images.unsplash.com/photo-1518605368461-1e1e38ce1542?auto=format&fit=crop&q=80&w=800")', 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center', 
+          backgroundBlendMode: 'overlay', 
+          backgroundColor: 'rgba(11, 16, 28, 0.96)' 
+        }}
+      >
+        <div className="text-center mb-5 mt-1">
+          <span className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] text-white shadow-sm uppercase">
+            LIGA MX • {resultado.jornada || 'FC 27'}
+          </span>
         </div>
+
+        <div className="flex justify-between items-start gap-3 px-1 mb-4 text-center">
+          <div className="flex-1 min-w-0">
+            <span className="bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">LOCAL</span>
+            <div className="font-black text-base md:text-lg text-white mt-2 leading-tight break-words">{resultado.local}</div>
+            <div className="text-[11px] text-slate-400 font-bold truncate mt-0.5">({managerLocal})</div>
+          </div>
+          
+          <div className="w-[10%] pt-6 font-black text-slate-500 text-xs tracking-widest flex-shrink-0">VS</div>
+          
+          <div className="flex-1 min-w-0">
+            <span className="bg-slate-700/40 text-slate-300 border border-slate-700/50 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">VISITANTE</span>
+            <div className="font-black text-base md:text-lg text-white mt-2 leading-tight break-words">{resultado.visitante}</div>
+            <div className="text-[11px] text-slate-400 font-bold truncate mt-0.5">({managerVisitante})</div>
+          </div>
+        </div>
+
+        <div className="bg-black/40 backdrop-blur-sm rounded-2xl py-3.5 px-6 border border-white/5 mb-5 flex flex-col items-center justify-center shadow-inner">
+          <div className="text-4xl md:text-5xl font-black text-yellow-400 tracking-normal drop-shadow-[0_0_12px_rgba(250,204,21,0.3)] whitespace-nowrap">
+            {resultado.golesLocal} <span className="text-white/65 mx-1 font-extrabold">-</span> {resultado.golesVisitante}
+          </div>
+          <span className="text-[9px] text-emerald-400 font-black uppercase tracking-widest mt-1.5 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Finalizado
+          </span>
+        </div>
+
         {resultado.anotadores && resultado.anotadores.length > 0 && (
-          <div className="bg-black/50 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-inner">
-            <p className="font-bold text-white/40 text-[10px] uppercase tracking-wider mb-3">Reporte del partido</p>
-            <ul className="space-y-2 text-sm font-medium text-white/90">
-              {resultado.anotadores.map((a, i) => (<li key={i} className="flex items-center gap-2">{a}</li>))}
+          <div className="bg-black/55 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-lg flex-grow">
+            <p className="font-bold text-slate-500 text-[10px] uppercase tracking-wider mb-2.5 border-b border-white/5 pb-1.5">REPORTE DEL PARTIDO</p>
+            <ul className="space-y-2 text-xs font-semibold text-slate-200">
+              {resultado.anotadores.map((a, i) => (
+                <li key={i} className="flex items-center gap-2 leading-tight bg-white/[0.02] p-1 px-2 rounded-lg border border-white/[0.03]">
+                  {a}
+                </li>
+              ))}
             </ul>
           </div>
         )}
       </div>
+
       <button onClick={compartirWhatsApp} className="mt-8 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-[#25D366]/30 flex items-center gap-3 transform transition-transform active:scale-95 w-full max-w-sm justify-center">
         Enviar al Grupo de WhatsApp
       </button>
-      <button onClick={() => setVista('tabla')} className="mt-4 text-slate-500 font-medium hover:text-slate-800 transition-colors">Volver a las tablas</button>
+      <button onClick={() => setVista('tabla')} className="mt-4 text-slate-500 font-medium hover:text-slate-800 transition-colors mb-6">Volver a las tablas</button>
     </div>
   );
 }
 
-function VistaAdmin() {
+function VistaAdmin({ partidos, db }) {
   const [pass, setPass] = useState('');
   const [nombre, setNombre] = useState('');
   const [equipo, setEquipo] = useState('');
+  
   if (pass !== 'admin123') {
     return (
       <div className="max-w-sm mx-auto mt-12 bg-white p-8 rounded-2xl shadow-xl border border-slate-100 text-center">
@@ -514,29 +609,62 @@ function VistaAdmin() {
       </div>
     );
   }
+
   const agregarJugador = async (e) => {
     e.preventDefault();
     await addDoc(collection(db, 'jugadores'), { nombre, equipo });
     setNombre(''); setEquipo('');
     alert('✅ Participante agregado correctamente a la base de datos.');
   };
+
+  const eliminarPartido = async (id) => {
+    if(window.confirm('¿Estás seguro de eliminar este partido? Esta acción no se puede deshacer y los puntos/goles se restarán automáticamente.')) {
+      await deleteDoc(doc(db, 'partidos', id));
+      alert('🗑️ Partido eliminado.');
+    }
+  };
+
   return (
-    <div className="max-w-md mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-100">
-      <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-        <span className="text-2xl">⚙️</span>
-        <h2 className="text-xl font-bold text-slate-800">Panel de Administración</h2>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-100">
+        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+          <span className="text-2xl">⚙️</span>
+          <h2 className="text-xl font-bold text-slate-800">Panel de Administración</h2>
+        </div>
+        <form onSubmit={agregarJugador} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre o ID del Jugador</label>
+            <input type="text" placeholder="Ej. Edgar" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={nombre} onChange={e => setNombre(e.target.value)} required />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Equipo Liga MX</label>
+            <input type="text" placeholder="Ej. Pachuca" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={equipo} onChange={e => setEquipo(e.target.value)} required />
+          </div>
+          <button type="submit" className="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-colors">+ Inscribir Participante</button>
+        </form>
       </div>
-      <form onSubmit={agregarJugador} className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre o ID del Jugador</label>
-          <input type="text" placeholder="Ej. Edgar" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={nombre} onChange={e => setNombre(e.target.value)} required />
+
+      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-100">
+        <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+          <span className="text-2xl">🗑️</span>
+          <h2 className="text-xl font-bold text-slate-800">Eliminar Registros (Duplicados)</h2>
         </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Equipo Liga MX</label>
-          <input type="text" placeholder="Ej. Pachuca" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" value={equipo} onChange={e => setEquipo(e.target.value)} required />
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+          {partidos.length === 0 ? (
+            <p className="text-sm text-slate-500 text-center py-4">No hay partidos registrados para eliminar.</p>
+          ) : [...partidos].reverse().map((p) => (
+            <div key={p.id} className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div>
+                <span className="text-xs font-bold text-blue-600 block mb-1">{p.jornada || 'Sin Jornada'}</span>
+                <span className="font-semibold text-slate-800">{p.local} {p.golesLocal} - {p.golesVisitante} {p.visitante}</span>
+              </div>
+              <button onClick={() => eliminarPartido(p.id)} className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors shadow-sm">
+                Eliminar
+              </button>
+            </div>
+          ))}
         </div>
-        <button type="submit" className="w-full mt-4 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-colors">+ Inscribir Participante</button>
-      </form>
+      </div>
     </div>
   );
 }

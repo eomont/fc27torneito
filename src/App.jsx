@@ -129,9 +129,9 @@ function VistaTablas({ partidos, jugadores }) {
             <div className="flex text-[10px] sm:text-xs font-bold text-slate-500 bg-slate-50 py-3 px-2 sm:px-4 items-center">
               <div className="w-8 text-center">POS</div>
               <div className="flex-1 pl-2">MÁNAGER / EQUIPO</div>
-              <div className="w-10 text-center">PJ</div>
-              <div className="w-12 text-center">DIF</div>
-              <div className="w-12 text-center text-slate-800">PTS</div>
+              <div className="w-8 text-center">PJ</div>
+              <div className="w-10 text-center">DIF</div>
+              <div className="w-10 text-center text-slate-800">PTS</div>
               <div className="w-6 text-center"></div>
             </div>
 
@@ -142,33 +142,33 @@ function VistaTablas({ partidos, jugadores }) {
               
               return (
                 <div key={fila.id} className="flex flex-col">
-                  {/* FILA PRINCIPAL (SIEMPRE VISIBLE SIN SCROLL) */}
+                  {/* FILA PRINCIPAL (SIEMPRE VISIBLE SIN SCROLL Y ALINEADA AL CENTRO VERTICALMENTE) */}
                   <div 
                     onClick={() => toggleFila(fila.id)}
-                    className={`flex items-center py-3.5 px-2 sm:px-4 cursor-pointer hover:bg-blue-50/40 transition-colors ${isFirst ? 'bg-amber-50/30' : ''} ${isLast ? 'bg-red-50/10' : ''}`}
+                    className={`flex items-center py-2.5 px-2 sm:px-4 cursor-pointer hover:bg-blue-50/40 transition-colors ${isFirst ? 'bg-amber-50/30' : ''} ${isLast ? 'bg-red-50/10' : ''}`}
                   >
                     <div className={`w-8 text-center font-black ${isFirst ? 'text-amber-500 text-base' : 'text-slate-400 text-sm'}`}>
                       {i + 1}
                     </div>
                     
                     <div className="flex-1 pl-2 flex flex-col justify-center min-w-0">
-                      <div className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-1.5 truncate">
+                      <div className="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-1.5 truncate leading-tight">
                         {fila.nombre} {isFirst && <span>👑</span>}
                       </div>
-                      <div className="text-[10px] sm:text-xs text-slate-500 font-semibold truncate mt-0.5">
+                      <div className="text-[10px] sm:text-xs text-slate-500 font-semibold truncate leading-tight">
                         {fila.equipo}
                       </div>
                     </div>
                     
-                    <div className="w-10 text-center text-xs sm:text-sm font-medium text-slate-600">
+                    <div className="w-8 text-center text-xs sm:text-sm font-medium text-slate-600">
                       {fila.pj}
                     </div>
                     
-                    <div className={`w-12 text-center text-xs sm:text-sm font-bold ${fila.dif > 0 ? 'text-emerald-600' : fila.dif < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
+                    <div className={`w-10 text-center text-xs sm:text-sm font-bold ${fila.dif > 0 ? 'text-emerald-600' : fila.dif < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
                       {fila.dif > 0 ? `+${fila.dif}` : fila.dif}
                     </div>
                     
-                    <div className="w-12 text-center font-black text-blue-600 text-base sm:text-lg">
+                    <div className="w-10 text-center font-black text-blue-600 text-base sm:text-lg">
                       {fila.pts}
                     </div>
 

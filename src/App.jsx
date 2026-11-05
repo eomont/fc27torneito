@@ -649,18 +649,31 @@ function VistaAdmin({ partidos, db }) {
           <span className="text-2xl">🗑️</span>
           <h2 className="text-xl font-bold text-slate-800">Eliminar Registros (Duplicados)</h2>
         </div>
-        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+        <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
           {partidos.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-4">No hay partidos registrados para eliminar.</p>
           ) : [...partidos].reverse().map((p) => (
-            <div key={p.id} className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <div>
-                <span className="text-xs font-bold text-blue-600 block mb-1">{p.jornada || 'Sin Jornada'}</span>
-                <span className="font-semibold text-slate-800">{p.local} {p.golesLocal} - {p.golesVisitante} {p.visitante}</span>
+            <div key={p.id} className="flex flex-col gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-xs font-bold text-blue-600 block mb-1">{p.jornada || 'Sin Jornada'}</span>
+                  <span className="font-semibold text-slate-800 text-base">{p.local} {p.golesLocal} - {p.golesVisitante} {p.visitante}</span>
+                  <span className="text-[10px] text-slate-500 font-medium block mt-1">
+                    📅 {p.fecha ? new Date(p.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : 'Fecha desconocida'}
+                  </span>
+                </div>
+                <button onClick={() => eliminarPartido(p.id)} className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors shadow-sm flex-shrink-0">
+                  Eliminar
+                </button>
               </div>
-              <button onClick={() => eliminarPartido(p.id)} className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors shadow-sm">
-                Eliminar
-              </button>
+              
+              {p.anotadores && p.anotadores.length > 0 && (
+                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-[10px] text-slate-600">
+                  <ul className="list-disc pl-4 space-y-1">
+                    {p.anotadores.map((a, j) => <li key={j}>{a}</li>)}
+                  </ul>
+                </div>
+              )}
             </div>
           ))}
         </div>

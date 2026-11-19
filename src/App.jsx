@@ -7,7 +7,7 @@ import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from 'fi
 const PLANTILLAS_FC27 = {
   "América": ["Luis Malagón", "Fernando Tapia", "Rodolfo Cota", "César Lugo", "Santiago Múñoz", "Santiago Ramos", "Israel Reyes", "Ramón Juárez", "Miguel Vázquez", "Franco Rossano", "Cristian Borja", "Dagoberto Espinoza", "Kevin Álvarez", "Emilio Lara", "Alan Cervantes", "Ricardo Cariño", "Ivan de la Cruz", "Erick Sánchez", "Carlos Álvarez", "Richard Sánchez", "Diego Valdés", "Brian Rodríguez", "Óscar Perea", "Javairo Dilrosun", "Zinedine González", "Henry Martín", "Miguel Borja"],
   "Cruz Azul": ["Kevin Mier", "Andrés Gudiño", "Ricardo Rodríguez", "Emmanuel Ochoa", "Willer Ditta", "Jesús Orozco Chiquete", "Alán Montes", "Gonzalo Piovi", "Raymundo Rubio", "Omar Campos", "Ralph Orquin", "Alan Mozo", "Erik Lira", "Amaury García", "Cristian Jiménez", "Jeremy Márquez", "Carlos Rodríguez", "Agustín Palavecino", "José Paradela", "Luka Romero", "Andrés Montaño", "Fernando Sámano", "Carlos Rotondi", "Amaury Morales", "Rogelio González", "Nicolás Ibáñez", "Christian Ebere", "Gabriel Fernández", "Jean Cabral", "Mateo Levy", "Bryan Gamboa"],
-  "Chivas": ["Hormigol", "Raúl Rangel", "Óscar Whalley", "Sebastián Liceaga", "Diego Campillo", "José Castillo", "Daniel Aguirre", "Luis Gabriel Rey", "Miguel Tapias", "Bryan González", "Richard Ledezma", "Miguel Gómez", "Omar Govea", "Fernando González", "Luis Romo", "Santiago Sandoval", "Efraín Álvarez", "Brian Gutiérrez", "Jordan Carrillo", "Kevin Castañeda", "Jonathan Pérez", "Roberto Alvarado", "Hugo Camberos", "Ricardo Marín", "Ángel Sepúlveda"],
+  "Chivas": ["Raúl Rangel", "Óscar Whalley", "Sebastián Liceaga", "Diego Campillo", "José Castillo", "Daniel Aguirre", "Luis Gabriel Rey", "Miguel Tapias", "Bryan González", "Richard Ledezma", "Miguel Gómez", "Omar Govea", "Fernando González", "Luis Romo", "Santiago Sandoval", "Efraín Álvarez", "Brian Gutiérrez", "Jordan Carrillo", "Kevin Castañeda", "Jonathan Pérez", "Roberto Alvarado", "Hugo Camberos", "Ricardo Marín", "Ángel Sepúlveda", "Hormigol"],
   "Toluca": ["Hugo González", "Luis García", "Ronaldo Beltrán", "David Skrem", "Federico Pereira", "Bruno Méndez", "Everardo López", "Luan", "Antonio Briseño", "Brian García", "Jesús Gallardo", "Santiago Simón", "Diego Barbosa", "Franco Romero", "Fernando Arce", "Marcel Ruiz", "Erick Gutiérrez", "Nicolás Castro", "Víctor Guzmán", "Alexis Vega", "Pável Pérez", "Helinho", "Jesús Angulo", "Federico Viñas", "Paulinho", "Iván López", "Jorge Díaz Price", "Oswaldo Virgen"],
   "Tigres": ["Nahuel Guzmán", "Felipe Rodríguez", "Antonio Carrera", "Joaquim", "Alan Franco", "Jesús Angulo", "Rafael Guerrero", "Marco Farfán", "Osvaldo Rodríguez", "Francisco Reyes", "Fernando Ordóñez", "Jesús Garza", "Vladimir Loroña", "Rômulo", "César Araújo", "Henrique Simeoae", "Fernando Gorriarán", "Juan Pablo Vigón", "Juan Brunetta", "Marcelo Flores", "Emiliano Gómez", "Diego Sánchez", "Mauro Lainez", "Jaidyn Contreras", "Diego Lainez", "Ozziel Herrera", "Rodrigo Aguirre", "Ricardo Monreal", "Guillermo Martínez"],
   "Monterrey": ["Luis Cárdenas", "Esteban Andrada", "César Ramos", "Víctor Guzmán", "Carlos Salcedo", "César Bustos", "Gerardo Arteaga", "Alonso Aceves", "Luis Reyes", "Ricardo Chávez", "Érick Aguirre", "Stefan Medina", "Javier Casillas", "Fidel Ambriz", "César Garza", "Jorge Rodríguez", "Orbelín Pineda", "Iker Fimbres", "Óliver Torres", "Sebastián Rodríguez", "Paxon Ruffin", "Lucas Ocampos", "Luca Orellano", "Jesús Corona", "Hugo Cuypers", "Diego Rossi", "Roberto de la Rosa", "Uros Djurdjevic"],
@@ -25,16 +25,21 @@ const PLANTILLAS_FC27 = {
   "Santos Laguna": ["Carlos Acevedo", "Héctor Holguín", "Bruno Amione", "Franco Pardo", "Efraín Orona", "Felipe Sánchez", "Geovanni Pérez", "Emmanuel Echeverría", "Kevin Picón", "Mauricio Cuevas", "José Abella", "Aldo López", "Salvador Mariscal", "Javier Güémez", "Pedro Aquino", "Facundo Cáseres", "Nelson Cedillo", "Ezequiel Bullaude", "Fran Villalba", "Luis Gómez", "Joshua Mancha", "Kevin Palacios", "Diego González", "Ramiro Sordo", "Diego Medina", "Lucas Di Yorio", "Eduardo Aguirre", "Esteban Lozano", "Tahiel Jiménez"]
 };
 
-// Función para normalizar nombres y evitar errores de mayúsculas/minúsculas
+// Función para normalizar nombres y evitar errores de mayúsculas/minúsculas o acentos
 const normalizarNombre = (nombre) => nombre?.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-// Función para buscar la plantilla de un equipo ignorando mayúsculas/minúsculas
+// Función para buscar la plantilla de un equipo ignorando mayúsculas/minúsculas y nombres cortos
 const obtenerPlantilla = (equipoBuscado) => {
   if (!equipoBuscado) return ['Plantilla no registrada'];
   const equipoNormalizado = normalizarNombre(equipoBuscado);
   
   for (const [nombreEquipo, jugadores] of Object.entries(PLANTILLAS_FC27)) {
-    if (normalizarNombre(nombreEquipo) === equipoNormalizado) {
+    const nombreNormalizado = normalizarNombre(nombreEquipo);
+    if (
+      nombreNormalizado === equipoNormalizado ||
+      nombreNormalizado.includes(equipoNormalizado) ||
+      equipoNormalizado.includes(nombreNormalizado)
+    ) {
       return jugadores;
     }
   }
@@ -376,11 +381,10 @@ function VistaResultados({ partidos, jugadores }) {
     if (jornadaStr === 'Cuartos de Final') return 100;
     if (jornadaStr === 'Semifinal') return 101;
     if (jornadaStr === 'Final') return 102;
-    return 99; // Por si escriben algo diferente
+    return 99;
   };
 
   // Ordenamos ascendente por jornada (Jornada 1 -> Jornada 17 -> Finales)
-  // Si son de la misma jornada, se ordenan cronológicamente (el más viejo de esa jornada primero)
   const partidosOrdenados = [...partidos].sort((a, b) => {
     const pesoA = getPesoJornada(a.jornada);
     const pesoB = getPesoJornada(b.jornada);
